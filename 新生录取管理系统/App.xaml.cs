@@ -21,6 +21,12 @@ namespace 新生录取管理系统
             AllocConsole();
             Network.Initialize();
         }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            Network.Close();
+            base.OnExit(e);
+        }
     }
 
 }

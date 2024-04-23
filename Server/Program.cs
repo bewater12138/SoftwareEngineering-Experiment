@@ -9,12 +9,14 @@ internal class Program
         SQL.Initialize();
         Network.Initialize();
         Network.Start();
+        Security.Initialize();
+        Security.Run();
+        Service.Initialize();
 
         while (true)
         {
             //主循环
-
-
+            Thread.Sleep(1000);
         }
     }
 }

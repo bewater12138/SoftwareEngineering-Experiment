@@ -12,8 +12,15 @@ namespace 新生录取管理系统
     {
         public enum ErrorCode
         {
-            None,Timeover,Wrong,NetworkError
+            None,Timeover,LoginFail,NetworkError
         }
+
+        public enum LoginStatus
+        {
+            Wait,Fail,Success
+        }
+        static public LoginStatus Status { get; set; }
+        static public Account? Account { get; set; }
 
         //远程登录（阻塞方法）
         static public Account? LoginRemote(string id, string password,out ErrorCode err)
@@ -23,6 +30,7 @@ namespace 新生录取管理系统
                 err = ErrorCode.NetworkError;
                 return null;
             }
+            Login.Status = LoginStatus.Wait;
             Network.SendToServerAsync(id, password);
 
             var beg = System.Environment.TickCount;
@@ -32,7 +40,8 @@ namespace 新生录取管理系统
                 return beg + time_limit < System.Environment.TickCount;
             };
 
-            while(!Network.Instance.RecvdMsg)
+            //等待服务端回应
+            while(Login.Status == LoginStatus.Wait)
             {
                 Thread.SpinWait(5);
                 if(is_time_over())
@@ -40,6 +49,19 @@ namespace 新生录取管理系统
                     err = ErrorCode.Timeover;
                     return null;
                 }
+            }
+
+            //登录失败
+            if(Status == LoginStatus.Fail)
+            {
+                err =ErrorCode.LoginFail;
+                return null;
+            }
+            //登录成功
+            else if(Status == LoginStatus.Success)
+            {
+                err = ErrorCode.None;
+                return Account;
             }
 
             err = ErrorCode.None;

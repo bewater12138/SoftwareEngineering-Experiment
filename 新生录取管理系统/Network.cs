@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Interop;
 using Utility;
 using Utility.NetworkObject;
 #pragma warning disable 8602
@@ -27,52 +28,52 @@ namespace 新生录取管理系统
         {
             Task.Run(RecvThread);
         }
-        static private void RecvThread()
+
+        static private void WaitForConnection()
         {
-            bool recvd_head = false;
-            NetworkMsg msg = new NetworkMsg();
-            while(true)
+            do
             {
-                //如果没有建立好的连接，就先等待
                 bool should_wait = false;
-                s_Instance.socketMutex.WaitOne();
-                if (s_Instance.socket == null) should_wait = true;
-                else if (!s_Instance.socket.Connected)
+                Instance.socketMutex.WaitOne();
+                if (Instance.socket == null) should_wait = true;
+                else if (!Instance.socket.Connected)
                 {
-                    s_Instance.socket.Close();
-                    s_Instance.socket = null;
+                    Instance.socket.Close();
+                    Instance.socket = null;
                     should_wait = true;
                 }
-                s_Instance.socketMutex.ReleaseMutex();
+                Instance.socketMutex.ReleaseMutex();
 
-                if (should_wait)
+                if(should_wait)
                 {
                     Thread.SpinWait(5);
                     continue;
                 }
+                break;
+            } while (true);
+        }
+        static private void RecvThread()
+        {
+            MsgBuffer msgBuffer = new MsgBuffer();
+            while(true)
+            {
+                //如果没有建立好的连接，就先等待
+                WaitForConnection();
 
-
-                s_Instance.socketMutex.WaitOne();
-                //接收消息头部
-                if (!recvd_head)
+                Instance.socketMutex.WaitOne();
+                if (msgBuffer.TryRecv(Instance.socket))
                 {
-                    recvd_head = msg.Head.RecvForm(s_Instance.socket);
+                    MsgDispatcher.DispatchMsg(msgBuffer.Msg);
+                    msgBuffer.Reset();
                 }
-                //接收消息体
-                else
-                {
-                    if(msg.RecvBodyFrom(s_Instance.socket))
-                    {
-                        recvd_head = false;
-                        NetworkProcess.DispatchMsg(msg);
-                    }
-                }
-                s_Instance.socketMutex.ReleaseMutex();
+                Instance.socketMutex.ReleaseMutex();
             }
         }
         void IClose.Close() 
         {
-
+            socket?.GetStream().Write(Protocol.MakeMsg(MsgType.UserQuit).SerializeToBytes());
+            socket?.Client.Disconnect(false);
+            socket?.Close();
         }
 
         static public bool ConnectServer()
@@ -98,17 +99,17 @@ namespace 新生录取管理系统
         {
             try
             {
-                s_Instance.Sending = true;
-                await s_Instance.socket.GetStream().WriteAsync(bytes);
+                Instance.Sending = true;
+                await Instance.socket.GetStream().WriteAsync(bytes);
             }
             catch(Exception e)
             {
-                s_Instance.LastError = e;
-                s_Instance.SendFailFlag = true;
+                Instance.LastError = e;
+                Instance.SendFailFlag = true;
             }
             finally
             {
-                s_Instance.Sending = false;
+                Instance.Sending = false;
             }
         }
         static public void SendToServerAsync(string id, string password)

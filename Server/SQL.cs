@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Utility;
+using Server.Config;
 
 namespace Server
 {
@@ -17,10 +18,10 @@ namespace Server
         SqlConnection connection;
         public SQL() 
         {
-            sqlConnectionString.DataSource = "127.0.0.1";
-            sqlConnectionString.UserID = "sa";
-            sqlConnectionString.Password = "2694565268";
-            sqlConnectionString.InitialCatalog = "student";
+            sqlConnectionString.DataSource = SQLConfig.DataSource;
+            sqlConnectionString.UserID = SQLConfig.UserID;
+            sqlConnectionString.Password = SQLConfig.Password;
+            sqlConnectionString.InitialCatalog = SQLConfig.InitialCatalog;
 
             var constring = sqlConnectionString.ToString();
             connection = new SqlConnection(constring);

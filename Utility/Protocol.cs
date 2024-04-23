@@ -12,27 +12,26 @@ namespace Utility
 {
     public enum MsgType
     {
-        CheckId
+        CheckId,LoginFail,LoginSuccess,UserQuit
     }
 
     [Serializable]
     public class NetworkMsgHead
     {
         public MsgType type;
-        public int charLength;
-        public int byteLength => charLength * sizeof(char);
+        public int byteLength;
         public const int SerializedCharLength = 16;
-        public const int SerializedByteLength = SerializedCharLength * sizeof(char);
+        public const int SerializedByteLength = SerializedCharLength;
 
         public bool RecvForm(TcpClient socket)
         {
-            if(socket.Available>=SerializedByteLength)
+            if (socket.Available >= SerializedByteLength)
             {
                 byte[] bytes = new byte[SerializedByteLength];
                 socket.GetStream().Read(bytes, 0, SerializedByteLength);
                 string str = Encoding.Default.GetString(bytes, 0, bytes.Length);
                 type = (MsgType)int.Parse(str.Substring(0, 8));
-                charLength = int.Parse(str.Substring(8, 8));
+                byteLength = int.Parse(str.Substring(8, 8));
                 return true;
             }
 
@@ -43,7 +42,7 @@ namespace Utility
     public class NetworkMsgBody
     {
         public string jsonData = string.Empty;
-        public bool RecvFrom(TcpClient socket,int need_byte_count) 
+        public bool RecvFrom(TcpClient socket, int need_byte_count)
         {
             if (socket.Available >= need_byte_count)
             {
@@ -55,7 +54,7 @@ namespace Utility
             }
             return false;
         }
-        public T? Parse<T>() where T : class 
+        public T? Parse<T>() where T : class
         {
             T? ret = null;
             try
@@ -64,7 +63,7 @@ namespace Utility
             }
             catch
             {
-                
+
             }
             return ret;
         }
@@ -83,13 +82,66 @@ namespace Utility
 
         public string Serialize()
         {
-            var res = $"{(int)Head.type,8}{Head.charLength,8}";
+            var res = $"{(int)Head.type,8}{Head.byteLength,8}";
             res += Body.jsonData;
-            return res ;
+            return res;
+        }
+        public byte[] SerializeToBytes()
+        {
+            string str = Serialize();
+            return Encoding.Default.GetBytes(str);
+        }
+
+        public bool RecvHeadFrom(TcpClient socket)
+        {
+            return Head.RecvForm(socket);
         }
         public bool RecvBodyFrom(TcpClient socket)
         {
             return Body.RecvFrom(socket, Head.byteLength);
+        }
+    }
+
+    public class MsgBuffer
+    {
+        public NetworkMsg Msg {get; protected set;}
+        public bool HaveMsg { get; protected set;}
+        private bool haveRecvHead = false;
+
+        public MsgBuffer()
+        {
+            Msg = new NetworkMsg();
+            HaveMsg = false;
+        }
+
+        public bool TryRecv(TcpClient socket)
+        {
+            if(HaveMsg) { return false; }
+
+            if (!haveRecvHead)
+            {
+                if(Msg.Head.RecvForm(socket))
+                {
+                    haveRecvHead = true;
+                }
+            }
+
+            if(haveRecvHead)
+            {
+                if(Msg.RecvBodyFrom(socket))
+                {
+                    HaveMsg = true;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void Reset()
+        {
+            haveRecvHead=false;
+            HaveMsg = false;
         }
     }
 
@@ -99,24 +151,41 @@ namespace Utility
         {
             NetworkMsg msg = new NetworkMsg();
             msg.Head.type = type;
-            msg.Body.jsonData = JsonSerializer.Serialize(data);
-            msg.Head.charLength = msg.Body.jsonData.Length;
+            msg.Body.jsonData = JsonSerializer.Serialize(data,data.GetType());
+            msg.Head.byteLength = msg.Body.jsonData.Length;
             return msg;
         }
+
+        static public NetworkMsg MakeMsg(MsgType type)
+        {
+            NetworkMsg msg = new NetworkMsg();
+            msg.Head.type = type;
+            msg.Body.jsonData = "";
+            return msg;
+        }
+
     }
 
     namespace NetworkObject
     {
         public class IDandPassword
         {
-            public string id = string.Empty;
-            public string password = string.Empty;
+            public string id { get; set; }
+            public string password { get; set; }
             public IDandPassword(string id, string password)
             {
                 this.id = id;
                 this.password = password;
             }
+        }
 
+        public class AccountInfo
+        {
+            public Account? Account { get; set; }
+            public AccountInfo(Account account)
+            {
+                Account = account;
+            }
         }
     }
 }

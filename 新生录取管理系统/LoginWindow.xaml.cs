@@ -49,7 +49,7 @@ namespace 新生录取管理系统
                 switch(err)
                 {
                     case Login.ErrorCode.Timeover:err_msg = "登录超时";break;
-                    case Login.ErrorCode.Wrong:err_msg = "账号或密码错误";break;
+                    case Login.ErrorCode.LoginFail:err_msg = "账号或密码错误";break;
                     case Login.ErrorCode.NetworkError:err_msg = "网络问题";break;
                 }
 
@@ -67,12 +67,24 @@ namespace 新生录取管理系统
         {
             login_button.IsEnabled = false;
             register_button.IsEnabled = false;
+            login_button_bolder.Visibility = Visibility.Collapsed;
+            login_button.Visibility = Visibility.Collapsed;
+            register_button.Visibility = Visibility.Collapsed;
+
+            login_effect.IsEnabled = true;
+            login_effect.Visibility = Visibility.Visible;
         }
 
         private void LoginOver()
         {
             login_button.IsEnabled = true;
             register_button.IsEnabled = true;
+            login_button_bolder.Visibility = Visibility.Visible;
+            login_button.Visibility = Visibility.Visible;
+            register_button.Visibility = Visibility.Visible;
+
+            login_effect.IsEnabled = false;
+            login_effect.Visibility = Visibility.Collapsed;
         }
     }
 }
