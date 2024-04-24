@@ -27,14 +27,37 @@ namespace 新生录取管理系统
 
         private async void login_button_Click(object sender, RoutedEventArgs e)
         {
-            string  id          = string.Empty,
-                    password    = string.Empty;
-            input_account.Dispatcher.Invoke(() => { id = input_account.Text; });
-            input_password.Dispatcher.Invoke(() => { password = input_password.Password; });
+            StartLogin();
+            string id = string.Empty;
+            string password = string.Empty;
+            //await this.Dispatcher.BeginInvoke(() =>
+            //{
+            //    id = input_account.Text;
+            //    password = input_password.Password;
+            //});
+            id = input_account.Text;
+            password = input_password.Password;
             Account? account = null;
 
+            //先判断输入是否符合格式
+            if(!AccountFormat.CheckAccount(id)) 
+            {
+                Console.WriteLine("账号不合法");
+                error_tips_text.Text = "账号应为6-10位数字";
+                LoginOver();
+                return;
+            }
+            else if(!AccountFormat.CheckPassword(password)) 
+            {
+                Console.WriteLine("密码不合法");
+                error_tips_text.Text = "密码应为6-10位";
+                LoginOver();
+                return;
+            }
+            error_tips_text.Text = string.Empty;
+
+
             Login.ErrorCode err = Login.ErrorCode.None;
-            StartLogin();
             await Task.Run(() => { account = Login.LoginRemote(id, password, out err); });
             if (err == Login.ErrorCode.None)
             {
@@ -60,7 +83,8 @@ namespace 新生录取管理系统
 
         private void register_button_Click(object sender, RoutedEventArgs e)
         {
-
+            var rw = new RegisterWindow();
+            rw.ShowDialog();
         }
 
         private void StartLogin()

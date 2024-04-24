@@ -137,7 +137,11 @@ namespace Server
 
                 if (unchecked_count == 0)
                 {
-                    Thread.SpinWait(5);
+                    if(!Thread.Yield())
+                    {
+                        Thread.Sleep(1);
+                    }
+
                     continue;
                 }
                 break;
@@ -201,9 +205,9 @@ namespace Server
         private Account? m_FindAccount(string id, string password)
         {
             Thread.Sleep(1000);
-            if (id == "111" && password == "222")
+            if (id == "111111" && password == "222222")
             {
-                return new Account("111", "lyl", Privilege.Admin);
+                return new Account("111111", "lyl", Privilege.Admin);
             }
             return null;
         }

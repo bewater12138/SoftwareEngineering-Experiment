@@ -7,7 +7,282 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800" WindowStartupLocation="CenterScreen"
         Icon="resources/ncwu.png">
+    <Window.Resources>
+        <Style x:Key="left_button_style" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" VerticalAlignment="Center" HorizontalAlignment="Center"></ContentPresenter>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="FontSize" Value="20"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="False">
+                                <Setter Property="FontSize" Value="17"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="inquery_button_style" TargetType="Button">
+            <Setter Property="BorderBrush" Value="Gray"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}">
+                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" VerticalAlignment="Center" HorizontalAlignment="Center"></ContentPresenter>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="False">
+                                <Setter Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="text_style" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="text_input_style" TargetType="TextBox">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="data_grid_column" TargetType="DataGridColumnHeader">
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
 
+        <Grid x:Name="button_list">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="70"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Border Grid.RowSpan="7" Background="#FF5CA1F3" BorderThickness="0"/>
+
+            <Line Grid.Row="0" X1="5" X2="145" Y1="65" Y2="65" Stroke="LightBlue" StrokeThickness="3"/>
+            <Image Source="resources/Head.png" HorizontalAlignment="Left" Margin="5,10,0,20"/>
+            <TextBlock x:Name="name_textblock" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Left"
+                        Margin="50,15,0,15"
+                       Text="你的名字aaaa" Foreground="White" TextTrimming="CharacterEllipsis" TextWrapping="Wrap">
+                <TextBlock.ToolTip>
+                    <TextBlock x:Name="name_tooltip" Text=""/>
+                </TextBlock.ToolTip>
+            </TextBlock>
+
+            <Button Grid.Row="1" Content="     查询              " Margin="10,10" Style="{StaticResource left_button_style}"></Button>
+            <Button Grid.Row="2" Content="     录入              " Margin="10,10" Style="{StaticResource left_button_style}"></Button>
+            <Button Grid.Row="3" Content="     导出           " Margin="10,10" Style="{StaticResource left_button_style}"></Button>
+            <Button Grid.Row="4" Content="     账号管理           " Margin="10,10" Style="{StaticResource left_button_style}"></Button>
+        </Grid>
+
+        <Grid x:Name="inquery_page" Grid.Column="1" Visibility="Hidden">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="130"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+
+            <!--输入栏-->
+            <Grid x:Name="inquery_page_input" Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="1" Text="准考证号" FontSize="15"
+                           Margin="0,0,520,0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"/>
+                <TextBox x:Name="inquery_enumber_input"
+                         Grid.Row="1" FontSize="15" MaxLength="20"
+                         Margin="150,10,300,5"></TextBox>
+                
+                <TextBlock Grid.Row="2" Text="身份证号" FontSize="15"
+                           Margin="0,0,520,0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"/>
+                <TextBox x:Name="inquery_idnumber_input"
+                         Grid.Row="2" FontSize="15" MaxLength="20"
+                         Margin="150,10,300,5"></TextBox>
+
+                <CheckBox x:Name="checkbox_modify" Grid.Row="3" Content="修改信息" Margin="400,0,0,0">
+                    <CheckBox.ToolTip>
+                        <TextBlock Text="需要管理员权限"></TextBlock>
+                    </CheckBox.ToolTip>
+                </CheckBox>
+                <Button Grid.Row="2" Content="查询个人" Margin="400,10,150,5" Style="{StaticResource inquery_button_style}"/>
+                <Button Grid.Row="2" Content="查询所有人" Margin="520,10,30,5" Style="{StaticResource inquery_button_style}">
+                    <Button.ToolTip>
+                        <TextBlock Text="需要管理员权限"></TextBlock>
+                    </Button.ToolTip>
+                </Button>   
+            </Grid>
+
+            <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" Margin="15"/>
+        
+            <!--查询结果-->
+            <Grid x:Name="individual_inquery_res" Grid.Row="1" Margin="15" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="姓名:" Grid.Row="1" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_name" Grid.Row="1" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+                <TextBlock Text="身份证号:" Grid.Row="2" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_idnumber" Grid.Row="2" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+                <TextBlock Text="准考证号:" Grid.Row="3" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_enumber" Grid.Row="3" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+                <TextBlock Text="C1:" Grid.Row="4" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_c1" Grid.Row="4" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+                <TextBlock Text="C2:" Grid.Row="5" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_c2" Grid.Row="5" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+                <TextBlock Text="C3:" Grid.Row="6" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_c3" Grid.Row="6" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+                <TextBlock Text="C4:" Grid.Row="7" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_c4" Grid.Row="7" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+                <TextBlock Text="C5:" Grid.Row="8" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_c5" Grid.Row="8" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+                <TextBlock Text="C6:" Grid.Row="9" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_c6" Grid.Row="9" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+                <TextBlock Text="录取情况:" Grid.Row="10" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+                <TextBlock x:Name="individual_inquery_res_recruit" Grid.Row="10" Grid.Column="1"  Margin="10,0,0,0" Style="{StaticResource text_style}"/>
+            </Grid>
+
+            <Grid x:Name="admit_inquery_res"  Grid.Row="1" Margin="15" Visibility="Visible">
+                <DataGrid x:Name="admit_inquery_table"
+                          AutoGenerateColumns="False"
+                          ItemsSource="{Binding}"
+                          CellEditEnding="admit_inquery_table_CellEditEnding"
+                          VerticalScrollBarVisibility="Visible"
+                          HorizontalScrollBarVisibility="Visible"
+                          VerticalGridLinesBrush="Gray" GridLinesVisibility="All" HorizontalGridLinesBrush="Gray">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="准考证号" Binding="{Binding ExamineeNumber}" HeaderStyle="{StaticResource data_grid_column}" FontSize="12" Width="120"/>
+                        <DataGridTextColumn Header="姓名" Binding="{Binding Name}" HeaderStyle="{StaticResource data_grid_column}" FontSize="12" Width="40"/>
+                        <DataGridTextColumn Header="身份证号" Binding="{Binding IDNumber}" HeaderStyle="{StaticResource data_grid_column}" FontSize="12" Width="120"/>
+                        <DataGridTextColumn Header="C1" Binding="{Binding C1}" HeaderStyle="{StaticResource data_grid_column}" FontSize="12" Width="30"/>
+                        <DataGridTextColumn Header="C2" Binding="{Binding C2}" HeaderStyle="{StaticResource data_grid_column}" FontSize="12" Width="30"/>
+                        <DataGridTextColumn Header="C3" Binding="{Binding C3}" HeaderStyle="{StaticResource data_grid_column}" FontSize="12" Width="30"/>
+                        <DataGridTextColumn Header="C4" Binding="{Binding C4}" HeaderStyle="{StaticResource data_grid_column}" FontSize="12" Width="30"/>
+                        <DataGridTextColumn Header="C5" Binding="{Binding C5}" HeaderStyle="{StaticResource data_grid_column}" FontSize="12" Width="30"/>
+                        <DataGridTextColumn Header="C6" Binding="{Binding C6}" HeaderStyle="{StaticResource data_grid_column}" FontSize="12" Width="30"/>
+                        <DataGridCheckBoxColumn Header="录取" Binding="{Binding Recruit}" HeaderStyle="{StaticResource data_grid_column}" Width="40" IsReadOnly="True"/>
+                    </DataGrid.Columns>
+
+                </DataGrid>
+            </Grid>
+        </Grid>
+
+        <Grid x:Name="insert_page" Grid.Column="1" Visibility="Hidden">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="姓名:" Grid.Row="1" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+            <TextBox x:Name="insert_input_name" Grid.Row="1" Grid.Column="1" Margin="10,0,300,0" MaxLength="10" FontSize="15" MaxHeight="30"/>
+            <TextBlock Text="身份证号:" Grid.Row="2" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+            <TextBox x:Name="insert_input_idnumber" Grid.Row="2" Grid.Column="1" Margin="10,0,300,0" MaxLength="20" FontSize="15" MaxHeight="30"/>
+            <TextBlock Text="准考证号:" Grid.Row="3" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+            <TextBox x:Name="insert_input_enumber" Grid.Row="3" Grid.Column="1" Margin="10,0,300,0" MaxLength="20" FontSize="15" MaxHeight="30"/>
+            <TextBlock Text="C1:" Grid.Row="4" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+            <TextBox x:Name="insert_input_c1" Grid.Row="4" Grid.Column="1" Margin="10,0,300,0" MaxLength="10" FontSize="15" MaxHeight="30"/>
+            <TextBlock Text="C2:" Grid.Row="5" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+            <TextBox x:Name="insert_input_c2" Grid.Row="5" Grid.Column="1" Margin="10,0,300,0" MaxLength="10" FontSize="15" MaxHeight="30"/>
+            <TextBlock Text="C3:" Grid.Row="6" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+            <TextBox x:Name="insert_input_c3" Grid.Row="6" Grid.Column="1" Margin="10,0,300,0" MaxLength="10" FontSize="15" MaxHeight="30"/>
+            <TextBlock Text="C4:" Grid.Row="7" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+            <TextBox x:Name="insert_input_c4" Grid.Row="7" Grid.Column="1" Margin="10,0,300,0" MaxLength="10" FontSize="15" MaxHeight="30"/>
+            <TextBlock Text="C5:" Grid.Row="8" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+            <TextBox x:Name="insert_input_c5" Grid.Row="8" Grid.Column="1" Margin="10,0,300,0" MaxLength="10" FontSize="15" MaxHeight="30"/>
+            <TextBlock Text="C6:" Grid.Row="9" Style="{StaticResource text_style}" HorizontalAlignment="Right"
+                           Margin="0,0,10,0"/>
+            <TextBox x:Name="insert_input_c6" Grid.Row="9" Grid.Column="1" Margin="10,0,300,0" MaxLength="10" FontSize="15" MaxHeight="30"/>
+
+            <Button x:Name="insert_button" Content="录入" Style="{StaticResource inquery_button_style}"
+                    Grid.Column="1" Grid.Row="10" Margin="100,5,300,5"></Button>
+        </Grid>
+
+        <Grid x:Name="account_manage" Grid.Column="1" Visibility="Visible">
+            
+        </Grid>
     </Grid>
 </Window>

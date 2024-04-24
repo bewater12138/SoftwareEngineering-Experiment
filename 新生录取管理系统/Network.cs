@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -14,19 +15,76 @@ using Utility.NetworkObject;
 
 namespace 新生录取管理系统
 {
-    class Network:SingleInstance<Network>,IClose
+    class Msg(MsgType type,object? data)
+    {
+        public MsgType Type { get; set; } = type;
+        public object? Data { get; set; } = data;
+    }
+
+    partial class Network
+    {
+        static public bool ConnectServer()
+        {
+            try
+            {
+                Instance.socketMutex.WaitOne();
+                if (Instance.socket != null)
+                {
+                    Instance.socket.GetStream().Write(Protocol.MakeMsg(MsgType.SocketDisconnect).SerializeToBytes());
+                    Instance.socket.Close();
+                }
+                Instance.socket = new TcpClient("127.0.0.1", 10027);
+            }
+            catch (Exception e)
+            {
+                s_Instance.LastError = e;
+                return false;
+            }
+            finally
+            {
+                s_Instance.socketMutex.ReleaseMutex();
+            }
+            return true;
+        }
+
+        static public void SendToServerAsync(MsgType type, object data)
+        {
+            lock (Instance.SendQueue)
+            {
+                Instance.SendQueue.Enqueue(new Msg(type, data));
+            }
+        }
+
+        static public void SendToServerAsync(MsgType type)
+        {
+            lock (Instance.SendQueue)
+            {
+                Instance.SendQueue.Enqueue(new Msg(type, null));
+            }
+        }
+
+        static public void SendToServerAsync(string id, string password)
+        {
+            SendToServerAsync(MsgType.CheckId, new IDandPassword(id, password));
+        }
+    }
+
+    partial class Network:SingleInstance<Network>,IClose
     {
         TcpClient? socket;
         Mutex socketMutex = new Mutex();
         public TcpClient? ClientSocket => socket;
-        public bool Sending {  get; protected set; }
         public bool RecvdMsg {  get; protected set; }
         public bool SendFailFlag { get; protected set; }
         public Exception? LastError { get; protected set; }
 
+        //发送队列
+        private Queue<Msg> SendQueue = new Queue<Msg>();
+
         public Network() 
         {
             Task.Run(RecvThread);
+            Task.Run(SendThread);
         }
 
         static private void WaitForConnection()
@@ -46,7 +104,10 @@ namespace 新生录取管理系统
 
                 if(should_wait)
                 {
-                    Thread.SpinWait(5);
+                    if (!Thread.Yield())
+                    {
+                        Thread.Sleep(1);
+                    }
                     continue;
                 }
                 break;
@@ -63,60 +124,97 @@ namespace 新生录取管理系统
                 Instance.socketMutex.WaitOne();
                 if (msgBuffer.TryRecv(Instance.socket))
                 {
-                    MsgDispatcher.DispatchMsg(msgBuffer.Msg);
+                    MsgDispatcher.Dispatch(msgBuffer.Msg);
                     msgBuffer.Reset();
                 }
                 Instance.socketMutex.ReleaseMutex();
             }
         }
-        void IClose.Close() 
+
+        static private void WaitForSend()
         {
-            socket?.GetStream().Write(Protocol.MakeMsg(MsgType.UserQuit).SerializeToBytes());
-            socket?.Client.Disconnect(false);
-            socket?.Close();
+            while (true)
+            {
+                bool should_await = false;
+                lock (Instance.SendQueue)
+                {
+                    if(Instance.SendQueue.Count == 0)should_await = true;
+                }
+
+                if(should_await)
+                {
+                    if (!Thread.Yield())
+                    {
+                        Thread.Sleep(1);
+                    }
+                    continue;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        static private void SendAll()
+        {
+            while(true)
+            {
+                Msg? msg = null;
+                lock (Instance.SendQueue)
+                    {
+                        if (Instance.SendQueue.Count > 0)
+                        {
+                            msg = Instance.SendQueue.Dequeue();
+                        }
+                    }
+
+                if (msg != null)
+                {
+                    try
+                    {
+                        if(msg.Data != null)
+                        {
+                            Instance.ClientSocket.Send(msg.Type, msg.Data);
+                        }
+                        else
+                        {
+                            Instance.ClientSocket.Send(msg.Type);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"发送失败 msg.type={msg.Type}");
+                        Console.WriteLine(e);
+                    }
+                }
+            }
         }
 
-        static public bool ConnectServer()
+        static private void SendThread()
+        {
+            while(true)
+            {
+                WaitForSend();
+                SendAll();
+            }
+        }
+        void IClose.Close() 
         {
             try
             {
-                s_Instance.socketMutex.WaitOne();
-                if (s_Instance.socket != null) s_Instance.socket.Dispose();
-                s_Instance.socket = new TcpClient("127.0.0.1", 10027);
+                lock (Instance.SendQueue)
+                {
+                    Instance.SendQueue.Clear();
+                    var nmsg = Protocol.MakeMsg(MsgType.UserQuit).SerializeToBytes();
+                    socket?.Client.Send(nmsg);
+                }
             }
-            catch (Exception e)
+            catch
             {
-                s_Instance.LastError = e;
-                return false;
+
             }
-            finally
-            {
-                s_Instance.socketMutex.ReleaseMutex();
-            }
-            return true;
-        }
-        static public async void SendToServerAsync(byte[] bytes)
-        {
-            try
-            {
-                Instance.Sending = true;
-                await Instance.socket.GetStream().WriteAsync(bytes);
-            }
-            catch(Exception e)
-            {
-                Instance.LastError = e;
-                Instance.SendFailFlag = true;
-            }
-            finally
-            {
-                Instance.Sending = false;
-            }
-        }
-        static public void SendToServerAsync(string id, string password)
-        {
-            IDandPassword iap = new IDandPassword(id,password);
-            var bytes = Encoding.Default.GetBytes(Protocol.MakeMsg(MsgType.CheckId, iap).Serialize());
-            SendToServerAsync(bytes);
+            socket?.Client.Disconnect(false);
+            socket?.Close();
         }
     }
 }

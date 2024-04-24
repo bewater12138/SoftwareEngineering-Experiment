@@ -12,7 +12,7 @@ namespace Server
     {
         int entryTime;
         int lastMsgTime;
-        const int TimeLimit = 20 * 60_000;  //20分钟无应答自动断开连接
+        const int TimeLimit = 5 * 60_000;  //5分钟无应答自动断开连接
 
         TcpClient socket;
         NetworkStream stream;
@@ -24,11 +24,6 @@ namespace Server
         public bool ShouldDisconnect { get {
                 return shouldDisconnect || lastMsgTime + TimeLimit < System.Environment.TickCount;
             } }
-        //public bool ShouldDisconnect { get {
-        //        return !socket.Client.Connected || lastMsgTime + TimeLimit < System.Environment.TickCount;
-        //    }
-        //}
-
 
         public Client(UncheckedClient uclient, Account account)
         {
@@ -44,7 +39,7 @@ namespace Server
             if (buffer.TryRecv(socket))
             {
                 lastMsgTime = System.Environment.TickCount;
-                Service.DispatchMsg(this, buffer.Msg);
+                MsgDispatcher.Dispatch(this, buffer.Msg);
                 buffer.Reset();
             }
         }
@@ -80,7 +75,10 @@ namespace Server
                 }
                 if (should_wait)
                 {
-                    Thread.SpinWait(5);
+                    if (!Thread.Yield())
+                    {
+                        Thread.Sleep(1);
+                    }
                     continue;
                 }
                 break;
@@ -117,16 +115,6 @@ namespace Server
                         return false;
                     });
                 }
-            }
-        }
-
-        static public void DispatchMsg(Client client, NetworkMsg msg)
-        {
-            Log.LogInfo($"接收到客户消息 client={client.Socket.Client.RemoteEndPoint?.ToString()} msg.type={msg.Head.type}");
-        
-            switch (msg.Head.type)
-            {
-                case MsgType.UserQuit: client.SetShouldDisconnect(true); break;
             }
         }
 

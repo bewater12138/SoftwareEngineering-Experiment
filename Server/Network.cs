@@ -77,7 +77,8 @@ namespace Server
 
         void IClose.Close() 
         {
-        
+            Instance?.listener?.Stop();
+            Instance?.listener?.Dispose();
         }
     }
 }

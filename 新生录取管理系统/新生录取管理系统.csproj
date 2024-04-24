@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="resources\Head.png" />
     <None Remove="resources\ncwu.png" />
   </ItemGroup>
 
@@ -22,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="resources\Head.png" />
     <Resource Include="resources\ncwu.png" />
   </ItemGroup>
 

@@ -10,7 +10,49 @@ using Server.Config;
 
 namespace Server
 {
-    internal class SQL:SingleInstance<SQL>,IClose
+    internal partial class SQL
+    {
+        //查询学生信息
+        static public Student? InqueryStudent(
+            string examinee_number, //准考证号
+            string id_number        //身份证号
+            )
+        {
+            return null;
+        }
+
+        //查询账号
+        static public Account? InqueryAccount(string id,string password)
+        {
+            return null;
+        }
+
+        //插入学生信息
+        static public bool InsertStudent(Student stu)
+        {
+            return false;
+        }
+
+        //修改学生信息
+        static public bool ModifyStudent(string id_number, Student new_info)
+        {
+            return false;
+        }
+
+        //注册账号
+        static public bool RegisterAccount(Account acc)
+        {
+            return false;
+        }
+
+        //查找录取学生
+        static public List<Student> FindRecruitStudents()
+        {
+            return new List<Student>();
+        }
+    }
+
+    internal partial class SQL:SingleInstance<SQL>,IClose
     {
         static public bool IsOpen => s_Instance != null && s_Instance.connection.State == System.Data.ConnectionState.Open;
         
@@ -33,7 +75,7 @@ namespace Server
             }
             else
             {
-                Log.LogInfo("sqlserver 连接失败");
+                Log.LogError("sqlserver 连接失败");
             }
 
         }

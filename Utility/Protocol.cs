@@ -12,7 +12,7 @@ namespace Utility
 {
     public enum MsgType
     {
-        CheckId,LoginFail,LoginSuccess,UserQuit
+        CheckId,LoginFail,LoginSuccess,UserQuit,RegisterAccount,SocketDisconnect
     }
 
     [Serializable]
@@ -164,6 +164,15 @@ namespace Utility
             return msg;
         }
 
+
+        static public void Send(this TcpClient socket, MsgType type, object network_object)
+        {
+            socket.GetStream().Write(MakeMsg(type, network_object).SerializeToBytes());
+        }
+        static public void Send(this TcpClient socket, MsgType type)
+        {
+            socket.GetStream().Write(MakeMsg(type).SerializeToBytes());
+        }
     }
 
     namespace NetworkObject
@@ -186,6 +195,24 @@ namespace Utility
             {
                 Account = account;
             }
+        }
+
+        public class RegisterInfo
+        {
+            public string Name {  get; set; }
+            public string ID {  get; set; }
+            public string Password { get; set; }
+            public RegisterInfo(string name, string iD, string password)
+            {
+                Name = name;
+                ID = iD;
+                Password = password;
+            }
+        }
+
+        public class StudentInfo:Student
+        {
+
         }
     }
 }

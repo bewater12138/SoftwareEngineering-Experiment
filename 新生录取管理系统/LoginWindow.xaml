@@ -11,8 +11,8 @@
         Icon="resources/ncwu.png">
     <Window.Resources>
         <Style x:Key="ellipse" TargetType="Ellipse">
-            <Setter Property="Width" Value="20"/>
-            <Setter Property="Height" Value="20"/>
+            <Setter Property="Width" Value="15"/>
+            <Setter Property="Height" Value="15"/>
             <Setter Property="Fill" Value="#41b6e6"/>
             <Setter Property="RenderTransform">
                 <Setter.Value>
@@ -105,12 +105,12 @@
                     </EventTrigger>
                 </Canvas.Triggers>
                 <Label Content="登录中"
-           FontSize="20"
-           Foreground="#FF59B1FF"
-           FontWeight="Bold"
-           Width="200"
-           HorizontalContentAlignment="Center"
-           Canvas.Top="30"/>
+                        FontSize="20"
+                        Foreground="#FF59B1FF"
+                        FontWeight="Bold"
+                        Width="200"
+                        HorizontalContentAlignment="Center"
+                        Canvas.Top="30"/>
 
                 <Ellipse Name="e1" Canvas.Left="30"     Style="{StaticResource ellipse}"/>
                 <Ellipse Name="e2" Canvas.Left="60"     Style="{StaticResource ellipse}"/>
@@ -119,5 +119,7 @@
                 <Ellipse Name="e5" Canvas.Left="150"    Style="{StaticResource ellipse}"/>
             </Canvas>
         </Grid>
+        <TextBlock x:Name="error_tips_text" Grid.Row="3" Grid.ColumnSpan="2" Margin="80,0,5,5"
+                   FontSize="15" Foreground="#FFFC7E7E"/>
     </Grid>
 </Window>
